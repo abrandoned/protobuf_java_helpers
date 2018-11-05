@@ -39,11 +39,11 @@ public class Varinter {
   }
 
   @JRubyMethod(name = "acceptable?")
-  public static IRubyObject acceptable_p( ThreadContext context, IRubyObject self ) {
+  public static IRubyObject acceptable_p( ThreadContext context, IRubyObject self, IRubyObject recv ) {
     org.jruby.Ruby runtime = context.getRuntime();
 
-    if (self instanceof RubyInteger || self instanceof RubyFixnum) {
-      long value = ((RubyFixnum) self).getLongValue();
+    if (recv instanceof RubyInteger || recv instanceof RubyFixnum) {
+      long value = ((RubyFixnum) recv).getLongValue();
 
       if (value >= 0 && value <= INT32_MAX) {
         return runtime.getTrue();
@@ -56,12 +56,12 @@ public class Varinter {
   }
 
   @JRubyMethod
-  public static IRubyObject to_varint( ThreadContext context, IRubyObject self ) {
-    if (!(self instanceof RubyInteger || self instanceof RubyFixnum)) {
+  public static IRubyObject to_varint( ThreadContext context, IRubyObject self, IRubyObject recv ) {
+    if (!(recv instanceof RubyInteger || recv instanceof RubyFixnum)) {
       return context.nil;
     }
 
-    long value = ((RubyFixnum) self).getLongValue();
+    long value = ((RubyFixnum) recv).getLongValue();
     org.jruby.Ruby runtime = context.getRuntime();
     RubyString bit_string = runtime.newString(new ByteList(internal_to_varint(value), true));
     bit_string.force_encoding(context, runtime.getEncodingService().getEncoding(org.jcodings.specific.ASCIIEncoding.INSTANCE));
@@ -69,12 +69,12 @@ public class Varinter {
   }
 
   @JRubyMethod
-  public static IRubyObject to_varint_64( ThreadContext context, IRubyObject self ) {
-    if (!(self instanceof RubyInteger || self instanceof RubyFixnum)) {
+  public static IRubyObject to_varint_64( ThreadContext context, IRubyObject self, IRubyObject recv ) {
+    if (!(recv instanceof RubyInteger || recv instanceof RubyFixnum)) {
       return context.nil;
     }
 
-    long value = ((RubyFixnum) self).getLongValue();
+    long value = ((RubyFixnum) recv).getLongValue();
     org.jruby.Ruby runtime = context.getRuntime();
     RubyString bit_string = runtime.newString(new ByteList(internal_to_varint(value & 0xffffffffffffffffL), true));
     bit_string.force_encoding(context, runtime.getEncodingService().getEncoding(org.jcodings.specific.ASCIIEncoding.INSTANCE));
@@ -82,17 +82,17 @@ public class Varinter {
   }
 
   @JRubyMethod
-  public static IRubyObject read_varint(ThreadContext context, IRubyObject self) throws IOException {
+  public static IRubyObject read_varint(ThreadContext context, IRubyObject self, IRubyObject recv ) throws IOException {
     long value = 0L;
     int index = 0;
     long current_byte;
 
-    if (self instanceof StringIO) {
-      StringIO current_self = ((StringIO)self);
+    if (recv instanceof StringIO) {
+      StringIO current_recv = ((StringIO)recv);
       RubyFixnum fixnum;
 
       do {
-        fixnum = ((RubyFixnum)(current_self.getbyte(context)));
+        fixnum = ((RubyFixnum)(current_recv.getbyte(context)));
         current_byte = fixnum.getLongValue();
         if (index == 0 && current_byte < 128) { return context.getRuntime().newFixnum(current_byte); }
         value = (value | ((current_byte & 0x7f) << (7 * index)));
@@ -102,11 +102,11 @@ public class Varinter {
       return context.getRuntime().newFixnum(value);
     }
 
-    if (self instanceof RubyIO) {
-      RubyIO current_self = ((RubyIO)self);
+    if (recv instanceof RubyIO) {
+      RubyIO current_recv = ((RubyIO)recv);
 
       do {
-        current_byte = current_self.getByte(context);
+        current_byte = current_recv.getByte(context);
         if (index == 0 && current_byte < 128) { return context.getRuntime().newFixnum(current_byte); }
         value = (value | ((current_byte & 0x7f) << (7 * index)));
         index++;
