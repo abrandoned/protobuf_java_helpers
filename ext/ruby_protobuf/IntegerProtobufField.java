@@ -14,10 +14,10 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
-public class Int32ProtobufField {
-  private static final long MIN = (long)java.lang.Math.pow(-2, 31);
-  private static final long MAX = ((long)java.lang.Math.pow(2, 31) - 1);
-  private static String TYPE = "Int32";
+public class IntegerProtobufField {
+  private static final long MIN = ((long)java.lang.Math.pow(-2, 63));
+  private static final long MAX = ((long)java.lang.Math.pow(2, 63) - 1);
+  private static String TYPE = "Integer";
 
   private static boolean internal_acceptable(IRubyObject recv) {
     if (recv instanceof RubyInteger || recv instanceof RubyFixnum) {

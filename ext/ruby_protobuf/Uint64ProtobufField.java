@@ -17,7 +17,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class Uint64ProtobufField {
   private static final long MIN = 0L;
   private static final long MAX = ((long)java.lang.Math.pow(2, 64) - 1);
-  private static String TYPE = "Uint32";
+  private static String TYPE = "Uint64";
 
   private static boolean internal_acceptable(IRubyObject recv) {
     if (recv instanceof RubyInteger || recv instanceof RubyFixnum) {

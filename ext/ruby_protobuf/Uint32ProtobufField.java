@@ -16,7 +16,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 
 public class Uint32ProtobufField {
   private static final long MIN = 0L;
-  private static final long MAX = ((long)java.lang.Math.pow(2, 31) - 1);
+  private static final long MAX = ((long)java.lang.Math.pow(2, 32) - 1);
   private static String TYPE = "Uint32";
 
   private static boolean internal_acceptable(IRubyObject recv) {

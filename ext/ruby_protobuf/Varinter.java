@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.lang.Math;
+import java.math.BigInteger;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -36,6 +37,28 @@ public class Varinter {
 
     bytes.write((byte) value);
     return bytes.toByteArray();
+  }
+
+  @JRubyMethod
+  public static IRubyObject tag_from_bits(ThreadContext context, IRubyObject self, IRubyObject recv) {
+    if (recv instanceof RubyInteger || recv instanceof RubyFixnum) {
+      long value = ((RubyFixnum) recv).getLongValue();
+
+      return context.getRuntime().newFixnum(value >> 3);
+    }
+
+    return context.nil;
+  }
+
+  @JRubyMethod
+  public static IRubyObject wire_type_from_bits(ThreadContext context, IRubyObject self, IRubyObject recv) {
+    if (recv instanceof RubyInteger || recv instanceof RubyFixnum) {
+      long value = ((RubyFixnum) recv).getLongValue();
+
+      return context.getRuntime().newFixnum(value & 0x07);
+    }
+
+    return context.nil;
   }
 
   @JRubyMethod(name = "acceptable?")
@@ -84,33 +107,52 @@ public class Varinter {
   @JRubyMethod
   public static IRubyObject read_varint(ThreadContext context, IRubyObject self, IRubyObject recv ) throws IOException {
     long value = 0L;
-    int index = 0;
     long current_byte;
+    int number_of_bytes = 0;
+    long[] bytes = new long[12];
 
     if (recv instanceof StringIO) {
       StringIO current_recv = ((StringIO)recv);
       RubyFixnum fixnum;
 
+      fixnum = ((RubyFixnum)(current_recv.getbyte(context)));
+      current_byte = fixnum.getLongValue();
+      if (current_byte < 128) { return context.getRuntime().newFixnum(current_byte); }
+      bytes[number_of_bytes] = current_byte;
+
       do {
         fixnum = ((RubyFixnum)(current_recv.getbyte(context)));
         current_byte = fixnum.getLongValue();
-        if (index == 0 && current_byte < 128) { return context.getRuntime().newFixnum(current_byte); }
-        value = (value | ((current_byte & 0x7f) << (7 * index)));
-        index++;
+        number_of_bytes++;
+        bytes[number_of_bytes] = current_byte;
       } while ((current_byte & 0x80) != 0);
-
-      return context.getRuntime().newFixnum(value);
-    }
-
-    if (recv instanceof RubyIO) {
+    } else if (recv instanceof RubyIO) {
       RubyIO current_recv = ((RubyIO)recv);
+      current_byte = current_recv.getByte(context);
+      if (current_byte < 128) { return context.getRuntime().newFixnum(current_byte); }
+      bytes[number_of_bytes] =  current_byte;
 
       do {
         current_byte = current_recv.getByte(context);
-        if (index == 0 && current_byte < 128) { return context.getRuntime().newFixnum(current_byte); }
-        value = (value | ((current_byte & 0x7f) << (7 * index)));
-        index++;
+        number_of_bytes++;
+        bytes[number_of_bytes] = current_byte;
       } while ((current_byte & 0x80) != 0);
+    }
+
+    if (number_of_bytes > 8) { // Must move to BigInteger to handle the shifts and cast to Bignum
+      java.math.BigInteger big_value = java.math.BigInteger.ZERO;
+      for (int index = 0; index <= number_of_bytes; index++) {
+        big_value = big_value.or(
+            (java.math.BigInteger.valueOf(
+              (bytes[index] & 0x7f)).shiftLeft(7 * index))
+            );
+      }
+
+      return org.jruby.RubyBignum.newBignum(context.getRuntime(), big_value);
+    } else if (number_of_bytes > 0) {
+      for (int index = 0; index <= number_of_bytes; index++) {
+        value = (value | ((bytes[index] & 0x7f) << (7 * index)));
+      }
 
       return context.getRuntime().newFixnum(value);
     }

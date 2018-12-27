@@ -17,7 +17,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class Sint64ProtobufField {
   private static final long MIN = ((long)java.lang.Math.pow(-2, 63));
   private static final long MAX = ((long)java.lang.Math.pow(2, 63) - 1);
-  private static String TYPE = "Sint32";
+  private static String TYPE = "Sint64";
 
   private static boolean internal_acceptable(IRubyObject recv) {
     if (recv instanceof RubyInteger || recv instanceof RubyFixnum) {
