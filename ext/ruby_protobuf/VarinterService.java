@@ -15,6 +15,9 @@ public class VarinterService implements BasicLibraryService {
         RubyModule varinter = protobuf_java_helpers.defineModuleUnder(Varinter.class.getSimpleName());
         varinter.defineAnnotatedMethods(Varinter.class);
 
+        RubyModule integer_protobuf = protobuf_java_helpers.defineModuleUnder(IntegerProtobufField.class.getSimpleName());
+        integer_protobuf.defineAnnotatedMethods(IntegerProtobufField.class);
+
         RubyModule uint64_protobuf = protobuf_java_helpers.defineModuleUnder(Uint64ProtobufField.class.getSimpleName());
         uint64_protobuf.defineAnnotatedMethods(Uint64ProtobufField.class);
 

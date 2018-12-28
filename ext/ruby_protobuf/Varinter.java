@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import org.jcodings.specific.ASCIIEncoding;
 import org.jruby.Ruby;
+import org.jruby.RubyArray;
 import org.jruby.RubyBignum;
 import org.jruby.RubyComplex;
 import org.jruby.RubyFixnum;
@@ -39,33 +40,11 @@ public class Varinter {
     return bytes.toByteArray();
   }
 
-  @JRubyMethod
-  public static IRubyObject tag_from_bits(ThreadContext context, IRubyObject self, IRubyObject recv) {
-    if (recv instanceof RubyInteger || recv instanceof RubyFixnum) {
-      long value = ((RubyFixnum) recv).getLongValue();
-
-      return context.getRuntime().newFixnum(value >> 3);
-    }
-
-    return context.nil;
-  }
-
-  @JRubyMethod
-  public static IRubyObject wire_type_from_bits(ThreadContext context, IRubyObject self, IRubyObject recv) {
-    if (recv instanceof RubyInteger || recv instanceof RubyFixnum) {
-      long value = ((RubyFixnum) recv).getLongValue();
-
-      return context.getRuntime().newFixnum(value & 0x07);
-    }
-
-    return context.nil;
-  }
-
   @JRubyMethod(name = "acceptable?")
   public static IRubyObject acceptable_p( ThreadContext context, IRubyObject self, IRubyObject recv ) {
     org.jruby.Ruby runtime = context.getRuntime();
 
-    if (recv instanceof RubyInteger || recv instanceof RubyFixnum) {
+    if (recv instanceof RubyInteger || recv instanceof RubyFixnum || recv instanceof RubyNumeric || recv instanceof RubyFloat) {
       long value = ((RubyFixnum) recv).getLongValue();
 
       if (value >= 0 && value <= INT32_MAX) {
@@ -80,11 +59,11 @@ public class Varinter {
 
   @JRubyMethod
   public static IRubyObject to_varint( ThreadContext context, IRubyObject self, IRubyObject recv ) {
-    if (!(recv instanceof RubyInteger || recv instanceof RubyFixnum)) {
+    if (!(recv instanceof RubyInteger || recv instanceof RubyFixnum || recv instanceof RubyNumeric || recv instanceof RubyFloat)) {
       return context.nil;
     }
 
-    long value = ((RubyFixnum) recv).getLongValue();
+    long value = ((RubyNumeric) recv).getLongValue();
     org.jruby.Ruby runtime = context.getRuntime();
     RubyString bit_string = runtime.newString(new ByteList(internal_to_varint(value), true));
     bit_string.force_encoding(context, runtime.getEncodingService().getEncoding(org.jcodings.specific.ASCIIEncoding.INSTANCE));
@@ -93,11 +72,11 @@ public class Varinter {
 
   @JRubyMethod
   public static IRubyObject to_varint_64( ThreadContext context, IRubyObject self, IRubyObject recv ) {
-    if (!(recv instanceof RubyInteger || recv instanceof RubyFixnum)) {
+    if (!(recv instanceof RubyInteger || recv instanceof RubyFixnum || recv instanceof RubyNumeric || recv instanceof RubyFloat)) {
       return context.nil;
     }
 
-    long value = ((RubyFixnum) recv).getLongValue();
+    long value = ((RubyNumeric) recv).getLongValue();
     org.jruby.Ruby runtime = context.getRuntime();
     RubyString bit_string = runtime.newString(new ByteList(internal_to_varint(value & 0xffffffffffffffffL), true));
     bit_string.force_encoding(context, runtime.getEncodingService().getEncoding(org.jcodings.specific.ASCIIEncoding.INSTANCE));

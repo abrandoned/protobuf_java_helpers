@@ -19,10 +19,13 @@ public class Int64ProtobufField {
   private static final long MAX = ((long)java.lang.Math.pow(2, 63) - 1);
   private static String TYPE = "Int64";
 
+  private static boolean internal_acceptable(long value) {
+    return value >= MIN && value <= MAX;
+  }
+
   private static boolean internal_acceptable(IRubyObject recv) {
-    if (recv instanceof RubyInteger || recv instanceof RubyFixnum) {
-      long value = ((RubyFixnum) recv).getLongValue();
-      return value >= MIN && value <= MAX;
+    if (recv instanceof RubyInteger || recv instanceof RubyFixnum || recv instanceof RubyNumeric || recv instanceof RubyFloat) {
+      return internal_acceptable(((RubyNumeric) recv).getLongValue());
     }
 
     return false;
@@ -46,15 +49,7 @@ public class Int64ProtobufField {
     if (!internal_acceptable(recv)) {
       throw runtime.newTypeError("can't convert " + recv.getMetaClass() + " into " + TYPE);
     }
-
-    if (recv instanceof RubyInteger) {
-      return ((RubyInteger)recv).to_i();
-    }
-
-    if (recv instanceof RubyFixnum) {
-      return ((RubyFixnum)recv).to_i();
-    }
-
-    return org.jruby.util.TypeConverter.convertToInteger(context, recv, 10);
+    
+    return context.getRuntime().newFixnum(((RubyNumeric) recv).getLongValue());
   }
 }

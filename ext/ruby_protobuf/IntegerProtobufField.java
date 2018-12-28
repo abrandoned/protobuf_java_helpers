@@ -9,6 +9,7 @@ import org.jruby.RubyFloat;
 import org.jruby.RubyInteger;
 import org.jruby.RubyNumeric;
 import org.jruby.RubyString;
+import java.math.BigInteger;
 import org.jruby.util.TypeConverter;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
@@ -19,10 +20,13 @@ public class IntegerProtobufField {
   private static final long MAX = ((long)java.lang.Math.pow(2, 63) - 1);
   private static String TYPE = "Integer";
 
+  private static boolean internal_acceptable(long value) {
+    return value >= MIN && value <= MAX;
+  }
+
   private static boolean internal_acceptable(IRubyObject recv) {
-    if (recv instanceof RubyInteger || recv instanceof RubyFixnum) {
-      long value = ((RubyFixnum) recv).getLongValue();
-      return value >= MIN && value <= MAX;
+    if (recv instanceof RubyInteger || recv instanceof RubyFixnum || recv instanceof RubyNumeric || recv instanceof RubyFloat) {
+      return internal_acceptable(((RubyFixnum) recv).getLongValue());
     }
 
     return false;
@@ -56,5 +60,31 @@ public class IntegerProtobufField {
     }
 
     return org.jruby.util.TypeConverter.convertToInteger(context, recv, 10);
+  }
+
+  @JRubyMethod
+  public static IRubyObject decode_varint_64( ThreadContext context, IRubyObject self, IRubyObject recv ) {
+    if (!(recv instanceof RubyInteger || recv instanceof RubyFixnum || recv instanceof RubyNumeric || recv instanceof RubyFloat)) {
+      System.out.println("DERP");
+      return context.nil;
+    }
+
+    long value = ((RubyNumeric) recv).getLongValue();
+    org.jruby.Ruby runtime = context.getRuntime();
+
+    if ((value & 0x8000000000000000L) != 0L) {
+      java.math.BigInteger big_value = java.math.BigInteger.valueOf(value);
+      java.math.BigInteger big_minus = java.math.BigInteger.ONE.shiftLeft(16);
+      big_value = big_value.subtract(big_minus);
+
+      value = big_value.longValue();
+    }
+
+    if (internal_acceptable(value)) {
+      return context.getRuntime().newFixnum(value);
+    } else {
+      System.out.println("DERP2");
+      return context.nil;
+    }
   }
 }
