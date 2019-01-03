@@ -1,5 +1,6 @@
 require "java"
 require "jruby"
+require "stringio"
 require "protobuf_java_helpers/version"
 
 module ProtobufJavaHelpers
