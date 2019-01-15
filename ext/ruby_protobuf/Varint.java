@@ -70,6 +70,47 @@ public final class Varint {
         out.writeByte((int) value & 0x7F);
     }
 
+    public static void writeUnsignedVarLong2(long value, DataOutput out) throws IOException {
+      if ((value & 0xFFFFFFFFFFFFFF80L) != 0L) {
+        out.writeByte(((int) value & 0x7F) | 0x80);
+        value >>>= 7;
+        if ((value & 0xFFFFFFFFFFFFFF80L) != 0L) {
+          out.writeByte(((int) value & 0x7F) | 0x80);
+          value >>>= 7;
+          if ((value & 0xFFFFFFFFFFFFFF80L) != 0L) {
+            out.writeByte(((int) value & 0x7F) | 0x80);
+            value >>>= 7;
+            if ((value & 0xFFFFFFFFFFFFFF80L) != 0L) {
+              out.writeByte(((int) value & 0x7F) | 0x80);
+              value >>>= 7;
+              if ((value & 0xFFFFFFFFFFFFFF80L) != 0L) {
+                out.writeByte(((int) value & 0x7F) | 0x80);
+                value >>>= 7;
+                if ((value & 0xFFFFFFFFFFFFFF80L) != 0L) {
+                  out.writeByte(((int) value & 0x7F) | 0x80);
+                  value >>>= 7;
+                  if ((value & 0xFFFFFFFFFFFFFF80L) != 0L) {
+                    out.writeByte(((int) value & 0x7F) | 0x80);
+                    value >>>= 7;
+                    if ((value & 0xFFFFFFFFFFFFFF80L) != 0L) {
+                      out.writeByte(((int) value & 0x7F) | 0x80);
+                      value >>>= 7;
+                      if ((value & 0xFFFFFFFFFFFFFF80L) != 0L) {
+                        out.writeByte(((int) value & 0x7F) | 0x80);
+                        value >>>= 7;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      out.writeByte((int) value & 0x7F);
+    }
+
     /**
      * @see #writeSignedVarLong(long, DataOutput)
      */
