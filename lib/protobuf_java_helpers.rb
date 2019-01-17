@@ -25,7 +25,7 @@ module ProtobufJavaHelpers
       to_varint(value) || pure_encode(value)
     end
 
-    def decode(stream)
+    def pure_decode(stream)
       value = index = 0
       begin
         byte = stream.readbyte
@@ -33,6 +33,10 @@ module ProtobufJavaHelpers
         index += 1
       end while (byte & 0x80).nonzero?
       value
+    end
+
+    def decode(stream)
+      decode_varint(stream) || pure_decode(stream)
     end
   end
 end
