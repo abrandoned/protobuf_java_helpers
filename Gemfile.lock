@@ -9,7 +9,7 @@ GEM
     benchmark-ips (2.7.2)
     minitest (5.11.3)
     rake (10.5.0)
-    rake-compiler (1.0.5)
+    rake-compiler (1.0.7)
       rake
 
 PLATFORMS
@@ -17,11 +17,11 @@ PLATFORMS
 
 DEPENDENCIES
   benchmark-ips
-  bundler (~> 1.16)
+  bundler
   minitest (~> 5.0)
   protobuf_java_helpers!
   rake (~> 10.0)
   rake-compiler
 
 BUNDLED WITH
-   1.17.1
+   2.0.1
